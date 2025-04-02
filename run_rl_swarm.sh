@@ -28,15 +28,16 @@ HOST_MULTI_ADDRS=${HOST_MULTI_ADDRS:-$DEFAULT_HOST_MULTI_ADDRS}
 DEFAULT_IDENTITY_PATH="$ROOT"/swarm.pem
 IDENTITY_PATH=${IDENTITY_PATH:-$DEFAULT_IDENTITY_PATH}
 
-while true; do
-    read -p "Would you like to connect to the Testnet? [Y/n] " yn
-    yn=${yn:-Y}  # Default to "Y" if the user presses Enter
-    case $yn in
-        [Yy]* ) CONNECT_TO_TESTNET=True && break;;
-        [Nn]* ) CONNECT_TO_TESTNET=False && break;;
-        * ) echo ">>> Please answer yes or no.";;
-    esac
-done
+CONNECT_TO_TESTNET=True
+# while true; do
+#     read -p "Would you like to connect to the Testnet? [Y/n] " yn
+#     yn=${yn:-Y}  # Default to "Y" if the user presses Enter
+#     case $yn in
+#         [Yy]* ) CONNECT_TO_TESTNET=True && break;;
+#         [Nn]* ) CONNECT_TO_TESTNET=False && break;;
+#         * ) echo ">>> Please answer yes or no.";;
+#     esac
+# done
 
 if [ "$CONNECT_TO_TESTNET" = "True" ]; then
     # run modal_login server
@@ -45,26 +46,26 @@ if [ "$CONNECT_TO_TESTNET" = "True" ]; then
     # Check if the yarn command exists; if not, install Yarn.
     source ~/.bashrc
     
-    if ! command -v yarn >/dev/null 2>&1; then
-        # Detect Ubuntu (including WSL Ubuntu) and install Yarn accordingly
-        if grep -qi "ubuntu" /etc/os-release 2>/dev/null || uname -r | grep -qi "microsoft"; then
-            echo "Detected Ubuntu or WSL Ubuntu. Installing Yarn via apt..."
-            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt update && sudo apt install -y yarn
-        else
-            echo "Yarn is not installed. Installing Yarn..."
-            curl -o- -L https://yarnpkg.com/install.sh | sh
-            echo 'export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"' >> ~/.bashrc
-            source ~/.bashrc
-        fi
-    fi
-    yarn install
+    # if ! command -v yarn >/dev/null 2>&1; then
+    #     # Detect Ubuntu (including WSL Ubuntu) and install Yarn accordingly
+    #     if grep -qi "ubuntu" /etc/os-release 2>/dev/null || uname -r | grep -qi "microsoft"; then
+    #         echo "Detected Ubuntu or WSL Ubuntu. Installing Yarn via apt..."
+    #         curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+    #         echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    #         sudo apt update && sudo apt install -y yarn
+    #     else
+    #         echo "Yarn is not installed. Installing Yarn..."
+    #         curl -o- -L https://yarnpkg.com/install.sh | sh
+    #         echo 'export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"' >> ~/.bashrc
+    #         source ~/.bashrc
+    #     fi
+    # fi
+    # yarn install
     yarn dev > /dev/null 2>&1 & # Run in background and suppress output
 
     SERVER_PID=$!  # Store the process ID
     sleep 5
-    open http://localhost:3000
+    # open http://localhost:3000
     cd ..
 
     # Wait until modal-login/temp-data/userData.json exists
@@ -122,17 +123,18 @@ echo ">> Done!"
 echo ""
 echo ""
 
-if [ -n "${HF_TOKEN}" ]; then # Check if HF_TOKEN is already set and use if so. Else give user a prompt to choose.
-   HUGGINGFACE_ACCESS_TOKEN=${HF_TOKEN}
-else
-   read -p "Would you like to push models you train in the RL swarm to the Hugging Face Hub? [y/N] " yn
-   yn=${yn:-N}  # Default to "N" if the user presses Enter
-   case $yn in
-      [Yy]* ) read -p "Enter your Hugging Face access token: " HUGGINGFACE_ACCESS_TOKEN;;
-      [Nn]* ) HUGGINGFACE_ACCESS_TOKEN="None";;
-      * ) echo ">>> No answer was given, so NO models will be pushed to Hugging Face Hub" && HUGGINGFACE_ACCESS_TOKEN="None";;
-   esac
-fi
+HUGGINGFACE_ACCESS_TOKEN="None"
+# if [ -n "${HF_TOKEN}" ]; then # Check if HF_TOKEN is already set and use if so. Else give user a prompt to choose.
+#    HUGGINGFACE_ACCESS_TOKEN=${HF_TOKEN}
+# else
+#    read -p "Would you like to push models you train in the RL swarm to the Hugging Face Hub? [y/N] " yn
+#    yn=${yn:-N}  # Default to "N" if the user presses Enter
+#    case $yn in
+#       [Yy]* ) read -p "Enter your Hugging Face access token: " HUGGINGFACE_ACCESS_TOKEN;;
+#       [Nn]* ) HUGGINGFACE_ACCESS_TOKEN="None";;
+#       * ) echo ">>> No answer was given, so NO models will be pushed to Hugging Face Hub" && HUGGINGFACE_ACCESS_TOKEN="None";;
+#    esac
+# fi
 
 echo ""
 echo ""
