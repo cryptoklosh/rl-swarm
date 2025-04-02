@@ -66,7 +66,7 @@ export default function Home() {
     });
   }, [createdApiKey, signer, signerStatus.isConnected, user]);
 
-  // Show alert if crypto.subtle isn't available.
+  Show alert if crypto.subtle isn't available.
   useEffect(() => {
     if (typeof window === undefined) {
       return;
