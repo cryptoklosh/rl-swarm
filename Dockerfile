@@ -8,8 +8,8 @@ RUN cd modal-login && \
     yarn install && \
     cd ..
 
-RUN pip3 install -r requirements-hivemind.txt && \
-    pip3 install -r requirements.txt
+RUN pip3 install -r requirements-hivemind.txt --break-system-packages && \
+    pip3 install -r requirements.txt --break-system-packages
 
 RUN chmod +x ./entrypoint.sh
 ENTRYPOINT [ "/root/entrypoint.sh" ]
