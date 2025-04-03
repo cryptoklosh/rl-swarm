@@ -104,8 +104,8 @@ if [ "$CONNECT_TO_TESTNET" = "True" ]; then
 fi
 #lets go!
 echo "Getting requirements..."
-pip install -r "$ROOT"/requirements-hivemind.txt > /dev/null
-pip install -r "$ROOT"/requirements.txt > /dev/null
+# pip install -r "$ROOT"/requirements-hivemind.txt > /dev/null
+# pip install -r "$ROOT"/requirements.txt > /dev/null
 
 if ! which nvidia-smi; then
    #You don't have a NVIDIA GPU
