@@ -61,7 +61,7 @@ if [ "$CONNECT_TO_TESTNET" = "True" ]; then
     #     fi
     # fi
     # yarn install
-    yarn dev & # Run in background and suppress output
+    yarn start & # Run in background and suppress output
 
     SERVER_PID=$!  # Store the process ID
     sleep 5
