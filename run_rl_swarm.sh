@@ -140,12 +140,29 @@ echo ""
 echo ""
 echo "Good luck in the swarm!"
 
+function get_node_name {
+    echo "Started \"get_node_name\" job"
+    while true; do
+        sleep 10m
+        regex="INFO:hivemind_exp\\.trainer\\.hivemind_grpo_trainer:(.+):🐝\\sJoining(.*)"
+        info=$(cat "$ROOT"/logs/python.log | grep $regex)
+        if [[ $info =~ $regex ]]; then
+            node_name=${BASH_REMATCH[1]}
+            echo -n $node_name > "$ROOT"/identity/node_name.txt
+            echo "Finished \"get_node_name\""
+        else
+            echo "couldn't find node name in logs"
+        fi
+    done
+}
+
+mkdir -p "$ROOT"/logs
 if [ -n "$ORG_ID" ]; then
     python -m hivemind_exp.gsm8k.train_single_gpu \
         --hf_token "$HUGGINGFACE_ACCESS_TOKEN" \
         --identity_path "$IDENTITY_PATH" \
         --modal_org_id "$ORG_ID" \
-        --config "$CONFIG_PATH"
+        --config "$CONFIG_PATH" > "$ROOT"/logs/python.log &
 else
     python -m hivemind_exp.gsm8k.train_single_gpu \
         --hf_token "$HUGGINGFACE_ACCESS_TOKEN" \
@@ -153,8 +170,8 @@ else
         --public_maddr "$PUB_MULTI_ADDRS" \
         --initial_peers "$PEER_MULTI_ADDRS"\
         --host_maddr "$HOST_MULTI_ADDRS" \
-        --config "$CONFIG_PATH"
+        --config "$CONFIG_PATH" > "$ROOT"/logs/python.log &
 fi
 
-wait  # Keep script running until Ctrl+C
-
+get_node_name &
+tail -f "$ROOT"/logs/python.log
