@@ -6,6 +6,9 @@ RUN npm install --global yarn
 COPY . .
 RUN cd modal-login && \
     yarn install && \
+    yarn upgrade && \
+    yarn add next@latest && \
+    yarn add viem@latest && \
     cd ..
 
 RUN pip3 install -r requirements-hivemind.txt --break-system-packages && \
