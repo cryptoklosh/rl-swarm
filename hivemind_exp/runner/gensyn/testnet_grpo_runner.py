@@ -44,10 +44,6 @@ class TestnetGRPORunner(GRPORunner):
         peer_id = str(dht.peer_id)
         self.name = self._get_animal_name(peer_id)
         self.register_peer(peer_id)
-        with open('/root/identity/node_name', 'w+') as f:
-            f.write(self.name)
-        with open('/root/identity/peer_id', 'w+') as f:
-            f.write(str(peer_id))
         return dht
 
     def run(
