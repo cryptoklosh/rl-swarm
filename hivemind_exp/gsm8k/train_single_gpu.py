@@ -41,8 +41,7 @@ def main():
         try:
             runner.run(model_args, grpo_args, training_args, get_stage1_samples)
         except Exception as e:
-            root_logger.error(f"Train error captured. Ignoring and retrying: {e}")
-
+            root_logger.exception(e)
 
 if __name__ == "__main__":
     main()
