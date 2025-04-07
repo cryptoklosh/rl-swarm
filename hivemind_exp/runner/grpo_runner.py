@@ -84,6 +84,10 @@ class GRPORunner:
             logger.info(f"🤖 Starting swarm at {first_visible}")
 
         self.name = self._get_animal_name(str(dht.peer_id))
+        with open('/root/identity/node_name', 'w+') as f:
+            f.write(self.name)
+        with open('/root/identity/peer_id', 'w+') as f:
+            f.write(str(dht.peer_id))
         return dht
 
     def run(
