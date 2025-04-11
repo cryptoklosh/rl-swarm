@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import hivemind
+import pytest
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOConfig
 
@@ -15,7 +16,7 @@ from hivemind_exp.dht_utils import (
     rewards_key,
 )
 from hivemind_exp.hivemind_utils import SingleStageData, StageData
-from hivemind_exp.tests.fake_data import CK, QUESTION, RSK, SAMPLES
+from hivemind_exp.tests.fake_data import CK, QUESTION, QUESTION_HASH, RSK, SAMPLES
 from hivemind_exp.trainer.hivemind_grpo_trainer import (
     HivemindGRPOTrainer,
     get_dht_value,
@@ -62,10 +63,38 @@ def create_dht_and_trainer(tmp_path, node, stage_data, max_steps=1, initial_peer
     return dht, trainer
 
 
+
+
 ###############
 # SINGLE NODE #
 ###############
 
+def test_single_node_crash(tmp_path):
+    node = HivemindNode.coordinator("test", CK)
+
+    def reward_func(**kwargs):
+        return []
+
+    def error_fn (r, s):
+        raise ValueError("error")
+
+    _, trainer = create_dht_and_trainer(
+        tmp_path,
+        node,
+        StageData(
+            max_rounds=1,
+            round_winner_fn=lambda:[CK],
+            stages=[
+                SingleStageData(
+                    name="0",
+                    reward_funcs=[reward_func],
+                    datasets_fn= error_fn,
+                ),
+            ],
+        ),
+    )
+    with pytest.raises(ValueError, match='error'):
+        trainer.train()
 
 def test_single_node_single_stage(tmp_path):
     node = HivemindNode.coordinator("test", CK)
@@ -180,7 +209,7 @@ def test_multi_node_single_stage(tmp_path):
     for r, s in itertools.product([0], [0]):
         outputs = get_dht_value(dht0, key=outputs_key(node0.key, r, s), latest=True)
         assert outputs
-        assert outputs[QUESTION][1] == {"question": QUESTION}
+        assert outputs[QUESTION_HASH][1] == {"question": QUESTION}
 
         rewards = get_dht_value(dht0, key=rewards_key(r, s), latest=True)
         assert rewards
@@ -263,7 +292,7 @@ def test_multi_node_multi_stage(tmp_path):
     for r, s in itertools.product(range(1), range(3)):
         outputs = get_dht_value(dht0, key=outputs_key(node0.key, r, s), latest=False)
         assert outputs
-        assert outputs[QUESTION][1] == {"question": QUESTION}
+        assert outputs[QUESTION_HASH][1] == {"question": QUESTION}
 
         rewards = get_dht_value(dht0, key=rewards_key(r, s), latest=False)
         assert rewards

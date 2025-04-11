@@ -22,7 +22,7 @@ def main():
     root_logger.setLevel(logging.INFO)
     handler = colorlog.StreamHandler()
     handler.setFormatter(
-        colorlog.ColoredFormatter("%(light_red)s%(levelname)s:%(name)s:%(message)s")
+        colorlog.ColoredFormatter("%(green)s%(levelname)s:%(name)s:%(message)s")
     )
     root_logger.addHandler(handler)
 
@@ -37,11 +37,8 @@ def main():
     else:
         runner = GRPORunner()
 
-    while True:
-        try:
-            runner.run(model_args, grpo_args, training_args, get_stage1_samples)
-        except Exception as e:
-            root_logger.exception(e)
+    runner.run(model_args, grpo_args, training_args, get_stage1_samples)
+
 
 if __name__ == "__main__":
     main()

@@ -18,6 +18,8 @@ from hivemind_exp.dht_utils import *
 from hivemind_exp.name_utils import *
 
 from . import global_dht
+from .kinesis import Kinesis
+from .dht_pub import RewardsDHTPublisher, GossipDHTPublisher
 
 # UI is served from the filesystem
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -109,6 +111,23 @@ def get_leaderboard():
         return {
             "leaders": res.get("leaders", []),
             "total": res.get("total", 0),
+        }
+
+
+@app.get("/api/leaderboard-cumulative")
+def get_leaderboard_cumulative():
+    leaderboard = global_dht.dht_cache.get_leaderboard_cumulative()
+    res = dict(leaderboard)
+
+    if res is not None:
+        return {
+            "leaders": res.get("leaders", []),
+            "total": res.get("total", 0),
+        }
+    else:
+        return {
+            "leaders": [],
+            "total": 0,
         }
 
 
@@ -262,11 +281,34 @@ def main(args):
 
     # Supplied with the bootstrap node, the client will have access to the DHT.
     logger.info(f"initializing DHT with peers {initial_peers}")
-    global_dht.setup_global_dht(initial_peers, coordinator, logger)
+
+    kinesis_stream = os.getenv("KINESIS_STREAM", "")
+    kinesis_client = Kinesis(kinesis_stream)
+
+    global_dht.setup_global_dht(initial_peers, coordinator, logger, kinesis_client)
 
     thread = Thread(target=populate_cache)
     thread.daemon = True
     thread.start()
+
+    # Start publishing to kinesis. This will eventually replace the populate_cache thread.
+    logger.info("Starting rewards publisher")
+    rewards_publisher = RewardsDHTPublisher(
+        dht=global_dht.dht,
+        kinesis_client=kinesis_client,
+        logger=logger,
+        poll_interval_seconds=300,  # 5 minute
+    )
+    rewards_publisher.start()
+
+    logger.info("Starting gossip publisher")
+    gossip_publisher = GossipDHTPublisher(
+        dht=global_dht.dht,
+        kinesis_client=kinesis_client,
+        logger=logger,
+        poll_interval_seconds=150,  # 2.5 minute
+    )
+    gossip_publisher.start()
 
     logger.info(f"initializing server on port {port}")
     server.run()
